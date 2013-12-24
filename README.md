@@ -9,4 +9,6 @@ Set right fan on high and leaves the left unchanged
 
 `i8kfan - 2`
 
-http://www.cyberciti.biz/faq/controlling-dell-fan-speeds-temperature-on-ubuntu-debian-linux/
+http://www.cyberciti.biz/faq/controlling-dell-fan-speeds-temperature-on-ubuntu-debian-linux
+
+https://ask.fedoraproject.org/question/25197/fan-on-my-laptop-runs-all-the-time-at-maximum-speed/
