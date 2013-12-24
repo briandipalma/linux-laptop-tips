@@ -1,9 +1,10 @@
-linux-laptop-tips
+linux-laptop-cheat-sheet
 =================
 
-> sensors (lm_sensors) - prints out hardware sensors reading, includes temp/fan speed
+`sensors` (lm_sensors) - prints out hardware sensors reading, includes temp/fan speed
 
-# Set right fan on high and leaves the left unchanged
-> i8kfan - 2
+Set right fan on high and leaves the left unchanged
+
+`i8kfan - 2`
 
 http://www.cyberciti.biz/faq/controlling-dell-fan-speeds-temperature-on-ubuntu-debian-linux/
