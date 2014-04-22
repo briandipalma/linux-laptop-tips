@@ -23,3 +23,12 @@ I recommend doing this once instead:
 That sets your user account as the owner of the /usr/local directory, so that you can just issue normal commands in there. Then you won't ever have to use sudo when you install node or issue npm commands.
 
 It's much better this way. `/usr/local` is supposed to be the stuff you installed, after all.
+
+Install brackets
+----------------
+
+`sudo yum locainstall x.rpm`
+
+`sudo chown $USER /opt/brackets/brackets.desktop`
+
+
