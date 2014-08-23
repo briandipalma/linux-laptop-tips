@@ -1,7 +1,7 @@
 linux-laptop-cheat-sheet
 =================
 
-`sudo modprobe -v i8k`
+`sudo modprobe i8k force=1`
 
 `sensors` (lm_sensors) - prints out hardware sensors reading, includes temp/fan speed
 
