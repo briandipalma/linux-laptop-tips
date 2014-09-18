@@ -31,4 +31,7 @@ Install brackets
 
 `sudo chown $USER /opt/brackets/brackets.desktop`
 
+Prompt
+------
 
+https://github.com/nojhan/liquidprompt
