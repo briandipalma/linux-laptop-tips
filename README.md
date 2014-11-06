@@ -35,3 +35,9 @@ Prompt
 ------
 
 https://github.com/nojhan/liquidprompt
+
+
+Synergy
+---------
+
+http://superuser.com/questions/77734/synergy-linux-keyboard-problem
