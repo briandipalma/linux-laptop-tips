@@ -46,3 +46,5 @@ Power management
 ----------------
 
 sudo pm-powersave false
+
+/usr/lib/pm-utils/power.d/wireless
