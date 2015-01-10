@@ -41,3 +41,8 @@ Synergy
 ---------
 
 http://superuser.com/questions/77734/synergy-linux-keyboard-problem
+
+Power management
+----------------
+
+sudo pm-powersave false
