@@ -52,4 +52,4 @@ sudo pm-powersave false
 VPN
 ---
 
-`vpnc /home/$USER/vpnc.conf`
+`sudo vpnc /home/$USER/vpnc.conf`
