@@ -53,3 +53,8 @@ VPN
 ---
 
 `sudo vpnc /home/$USER/vpnc.conf`
+
+AVCONV
+---
+
+avconv -i in.mp4 -b 320k out.mp3
