@@ -58,3 +58,10 @@ AVCONV
 ---
 
 avconv -i in.mp4 -b 320k out.mp3
+
+GIT
+---
+
+Step 1) Copy git-completion.bash from <your git install folder>/etc/bash-completion.d/ (or GH) to ~/.git-completion.bash
+Step 2) add source ~/.git-completion.bash to your .bash_profile
+Step 3) __git_complete g __git_main after that line
