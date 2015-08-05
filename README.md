@@ -65,3 +65,8 @@ GIT
 * Copy `git-completion.bash` from `<your git install folder>/etc/bash-completion.d/` (or GH) to `~/.git-completion.bash`
 * add `source ~/.git-completion.bash` to your `.bash_profile` or `.bashrc`
 * `__git_complete g __git_main` after that line
+
+Y-DL
+---
+
+`youtube-dl -u <user> -p <password> :vimeowatchlater --dump-single-json --flat-playlist | youtube-dl --load-info -`
