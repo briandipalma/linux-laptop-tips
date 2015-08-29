@@ -69,4 +69,4 @@ GIT
 Y-DL
 ---
 
-`youtube-dl -u <user> -p <password> :vimeowatchlater --dump-single-json --flat-playlist | youtube-dl --load-info -`
+`youtube-dl -u <user> :ytwatchlater --dump-single-json --flat-playlist | youtube-dl --load-info -`
