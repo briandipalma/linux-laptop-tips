@@ -24,18 +24,10 @@ That sets your user account as the owner of the /usr/local directory, so that yo
 
 It's much better this way. `/usr/local` is supposed to be the stuff you installed, after all.
 
-Install brackets
-----------------
-
-`sudo yum locainstall x.rpm`
-
-`sudo chown $USER /opt/brackets/brackets.desktop`
-
 Prompt
 ------
 
 https://github.com/nojhan/liquidprompt
-
 
 Synergy
 ---------
