@@ -70,3 +70,11 @@ Y-DL
 ---
 
 `youtube-dl -u <user> :ytwatchlater --dump-single-json --flat-playlist | youtube-dl --load-info -`
+
+Atom
+---
+docblockr
+es-identifier-highlight
+linter
+linter-eslint
+minimap
