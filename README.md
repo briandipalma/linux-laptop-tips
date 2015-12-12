@@ -70,3 +70,7 @@ es-identifier-highlight
 linter
 linter-eslint
 minimap
+
+Reinstall
+--------
+Swap is required for laptop suspend.
