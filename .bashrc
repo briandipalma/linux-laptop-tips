@@ -14,3 +14,6 @@ export EDITOR=vim
 # --------------------------------------------------
 
 alias ll='ls -AFGhl'
+alias ~='cd ~'
+alias c='clear'
+alias ..='cd ../'
