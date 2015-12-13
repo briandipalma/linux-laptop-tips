@@ -54,7 +54,8 @@ avconv -i in.mp4 -b 320k out.mp3
 GIT
 ---
 
-* Copy `git-completion.bash` from `<your git install folder>/etc/bash-completion.d/` (or GH) to `~/.git-completion.bash`
+* Copy `git-completion.bash` from `<your git doc folder>/etc/git-completion.bash/` (or GH) to `~/.git-completion.bash`
+* `find / -type f -name "git-completion.bash" 2> err.log` will find the file
 * add `source ~/.git-completion.bash` to your `.bash_profile` or `.bashrc`
 * `__git_complete g __git_main` after that line
 
