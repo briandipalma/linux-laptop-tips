@@ -1,0 +1,7 @@
+[user]
+	name = Brian Di Palma
+	email = offler@gmail.com
+[alias]
+	br = branch
+	#############
+	ci = commit
