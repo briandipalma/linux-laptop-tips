@@ -2,6 +2,11 @@
 	name = Brian Di Palma
 	email = offler@gmail.com
 [alias]
-	br = branch
-	#############
-	ci = commit
+	s = status
+	c = commit
+	b = branch
+	o = checkout
+	pl = pull
+	pu = push
+[push]
+	default = simple
