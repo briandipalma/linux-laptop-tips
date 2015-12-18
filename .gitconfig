@@ -11,5 +11,6 @@
 	fp = fetch -p
 	su = submodule update
 	rbm = rebase master
+	rbc = rebase --continue
 [push]
 	default = simple
