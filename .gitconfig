@@ -9,5 +9,6 @@
 	pl = pull
 	pu = push
 	fp = fetch -p
+	su = submodule update
 [push]
 	default = simple
