@@ -10,5 +10,6 @@
 	pu = push
 	fp = fetch -p
 	su = submodule update
+	rbm = rebase master
 [push]
 	default = simple
