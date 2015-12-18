@@ -8,5 +8,6 @@
 	o = checkout
 	pl = pull
 	pu = push
+	fp = fetch -p
 [push]
 	default = simple
