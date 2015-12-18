@@ -18,3 +18,4 @@ alias ~='cd ~'
 alias c='clear'
 alias ..='cd ../'
 alias v=vim
+alias cd-=cd -
