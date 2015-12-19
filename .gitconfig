@@ -9,6 +9,8 @@
 	su = submodule update
 	rbm = rebase master
 	rbc = rebase --continue
+[merge]
+	conflictstyle = diff3
 [push]
 	default = simple
 [user]
