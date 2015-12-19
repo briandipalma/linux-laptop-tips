@@ -1,6 +1,3 @@
-[user]
-	name = Brian Di Palma
-	email = offler@gmail.com
 [alias]
 	s = status
 	c = commit
@@ -14,3 +11,6 @@
 	rbc = rebase --continue
 [push]
 	default = simple
+[user]
+	name = Brian Di Palma
+	email = offler@gmail.com
