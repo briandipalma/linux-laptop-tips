@@ -66,11 +66,12 @@ Y-DL
 
 Atom
 ---
-docblockr
-es-identifier-highlight
-linter
-linter-eslint
-minimap
+* docblockr
+* es-identifier-highlight
+* linter
+* linter-eslint
+* minimap
+* project-manager
 
 Reinstall
 --------
