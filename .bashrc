@@ -10,6 +10,9 @@ __git_complete g __git_main
 
 export EDITOR=vim
 
+# Android studio
+export JAVA_HOME=/usr/java/jdk1.8.0_66/
+
 # Make terminal better
 # --------------------------------------------------
 
