@@ -72,6 +72,7 @@ Atom
 * linter-eslint
 * minimap
 * project-manager
+* git-time-machine
 
 Reinstall
 --------
