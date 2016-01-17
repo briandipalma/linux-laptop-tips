@@ -20,6 +20,18 @@ alias l='ls -AFGhl'
 alias ~='cd ~'
 alias c='clear'
 alias ..='cd ../'
+alias ...='cd ../..'
 alias v=vim
 alias cd-='cd -'
 alias fhere='find . -name '
+
+# npm aliases
+#---------------------------------------------------
+alias ni='npm install'
+alias nis='npm install --save'
+alias nid='npm install --save-dev'
+alias nig='npm install --global'
+alias nt='npm test'
+alias nl='npm link'
+alias nr='npm run'
+alias nf='npm cache clean && rm -rf node_modules && npm install'
