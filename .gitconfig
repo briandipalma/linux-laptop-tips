@@ -6,6 +6,7 @@
 	o = checkout
 	pl = pull
 	pu = push
+	puf = push --force-with-lease
 	fp = fetch -p
 	su = submodule update
 	rbm = rebase master
