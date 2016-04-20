@@ -11,6 +11,7 @@
 	su = submodule update
 	rbm = rebase master
 	rbc = rebase --continue
+	l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev --date=relative
 [merge]
 	conflictstyle = diff3
 [push]
