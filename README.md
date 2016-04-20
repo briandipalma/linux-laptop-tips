@@ -59,6 +59,8 @@ GIT
 * add `source ~/.git-completion.bash` to your `.bashrc`
 * `__git_complete g __git_main` after that line
 
+https://github.com/so-fancy/diff-so-fancy
+
 Y-DL
 ---
 
