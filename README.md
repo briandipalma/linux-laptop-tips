@@ -75,6 +75,7 @@ Atom
 * minimap
 * project-manager
 * git-time-machine
+* file-icons
 
 Reinstall
 --------
