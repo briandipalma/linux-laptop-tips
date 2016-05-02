@@ -77,6 +77,7 @@ Atom
 * git-time-machine
 * file-icons
 * jumpy
+* last-cursor-position
 
 Reinstall
 --------
