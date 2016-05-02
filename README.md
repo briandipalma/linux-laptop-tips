@@ -76,6 +76,7 @@ Atom
 * project-manager
 * git-time-machine
 * file-icons
+* jumpy
 
 Reinstall
 --------
