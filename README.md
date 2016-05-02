@@ -78,6 +78,7 @@ Atom
 * file-icons
 * jumpy
 * last-cursor-position
+* find-selection
 
 Reinstall
 --------
