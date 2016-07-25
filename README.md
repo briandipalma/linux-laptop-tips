@@ -79,6 +79,7 @@ Atom
 * jumpy
 * last-cursor-position
 * find-selection
+* language-babel
 
 Reinstall
 --------
