@@ -21,6 +21,7 @@ alias ~='cd ~'
 alias c='clear'
 alias ..='cd ../'
 alias ...='cd ../..'
+alias ....='cd ../../..'
 alias v=vim
 alias cd-='cd -'
 alias fhere='find . -name '
