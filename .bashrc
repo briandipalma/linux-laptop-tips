@@ -10,9 +10,6 @@ __git_complete g __git_main
 
 export EDITOR=vim
 
-# Android studio
-export JAVA_HOME=/usr/java/jdk1.8.0_66/
-
 # Make terminal better
 # --------------------------------------------------
 
@@ -27,7 +24,8 @@ alias cd-='cd -'
 alias fhere='find . -name '
 
 # npm aliases
-#---------------------------------------------------
+# --------------------------------------------------
+
 alias ni='npm install'
 alias nis='npm install --save'
 alias nid='npm install --save-dev'
@@ -36,3 +34,9 @@ alias nt='npm test'
 alias nl='npm link'
 alias nr='npm run'
 alias nf='npm cache clean && rm -rf node_modules && npm install'
+
+# Paths for applications
+# --------------------------------------------------
+
+export JAVA_HOME=/usr/java/jdk1.8.0_66/
+export PATH=$PATH:$JAVA_HOME/bin:$HOME/apps/apache-maven-3.3.9/bin
