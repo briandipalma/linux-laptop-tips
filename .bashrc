@@ -52,4 +52,7 @@ export PATH=$PATH:$JAVA_HOME/bin:$HOME/apps/apache-maven-3.3.9/bin
 # colours
 # -------------------------------------------------
 
-PS1='\e[33;1m\u@\h:\e[31m \W\e[0m \$ '
+TIME='\033[01;31m\]\t \033[01;32m\]'
+HOST='\033[02;36m\]\h'; HOST=' '$HOST
+LOCATION=' \033[00;33m\]\W \[\033[00m\] \n\$ '
+PS1=$TIME$USER$HOST$LOCATION
