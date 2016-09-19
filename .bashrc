@@ -5,6 +5,14 @@ alias g="git"
 source ~/.git-completion.bash
 __git_complete g __git_main
 
+# Add git info to prompt
+# -------------------------------------------------
+
+# Set config variables first
+GIT_PROMPT_ONLY_IN_REPO=1
+GIT_PROMPT_SHOW_UNTRACKED_FILES=no
+source ~/.bash-git-prompt/gitprompt.sh
+
 # Set up vim as default editor useful for git commit messages etc.
 # --------------------------------------------------
 
