@@ -40,3 +40,8 @@ alias nf='npm cache clean && rm -rf node_modules && npm install'
 
 export JAVA_HOME=/usr/java/jdk1.8.0_66/
 export PATH=$PATH:$JAVA_HOME/bin:$HOME/apps/apache-maven-3.3.9/bin
+
+# colours
+# -------------------------------------------------
+
+PS1='\e[33;1m\u@\h: \e[31m\W\e[0m \$ '
