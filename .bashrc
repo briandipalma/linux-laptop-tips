@@ -47,6 +47,7 @@ alias nf='npm cache clean && rm -rf node_modules && npm install'
 # --------------------------------------------------
 
 alias yi='yarn'
+alias yt='yarn test'
 
 # Paths for applications
 # --------------------------------------------------
