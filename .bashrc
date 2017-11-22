@@ -43,6 +43,11 @@ alias nl='npm link'
 alias nr='npm run'
 alias nf='npm cache clean && rm -rf node_modules && npm install'
 
+# yarn aliases
+# --------------------------------------------------
+
+alias yi='yarn'
+
 # Paths for applications
 # --------------------------------------------------
 
