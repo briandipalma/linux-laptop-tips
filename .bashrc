@@ -55,8 +55,8 @@ alias ys='yarn start'
 # Paths for applications
 # --------------------------------------------------
 
-export JAVA_HOME=/usr/java/jdk1.8.0_66/
-export PATH=$PATH:$JAVA_HOME/bin:$HOME/apps/apache-maven-3.3.9/bin
+# export JAVA_HOME=/usr/java/jdk1.8.0_66/
+# export PATH=$PATH:$JAVA_HOME/bin:$HOME/apps/apache-maven-3.3.9/bin
 
 # colours
 # -------------------------------------------------
