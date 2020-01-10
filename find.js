@@ -15,14 +15,14 @@ const remoteBranch = spawnSync("git", ["branch", "-r"], spawnOptions);
 const remoteBranches = remoteBranch.stdout.split(/\s+/);
 
 remoteBranches.forEach(branch => {
-  if (branch.startsWith(`${remote}/`) === false) {
-    console.log(`Skipping ${branch}, from another remote.`);
-  }
-
   const branchName = branch.replace(remotePrefix, "");
 
   if (ignoredBranches.includes(branchName)) {
     return;
+  }
+
+  if (branch.startsWith(`${remote}/`) === false) {
+    console.log(`Skipping ${branch}, from another remote.`);
   }
 
   if (showAuthorBranches) {
