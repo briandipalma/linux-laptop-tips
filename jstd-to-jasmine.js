@@ -35,10 +35,10 @@ function getTestsDeclaration(tests, root) {
       };
     }
 
-    throw new Error("Unimplemented getTestProperties 2");
+    throw new Error("Unimplemented getTestsDeclaration 2");
   }
 
-  throw new Error("Unimplemented getTestProperties");
+  throw new Error("Unimplemented getTestsDeclaration");
 }
 
 function getFunctionName(name) {
@@ -77,7 +77,7 @@ function createTestExpressionStatement(j, property) {
     );
   }
 
-  throw new Error("");
+  throw new Error("createTestExpressionStatement");
 }
 
 function convertJSTDTestsToJasmine(variableDeclarator, j, testName) {
