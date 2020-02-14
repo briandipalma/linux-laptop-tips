@@ -97,6 +97,24 @@ function convertJSTDTestsToJasmine(variableDeclarator, j, testName) {
   );
 }
 
+function removeIIFE(root) {
+  const body = root.get().value.program.body;
+
+  if (body.length === 1) {
+    const expressionStatement = body[0];
+
+    if (expressionStatement.type === "ExpressionStatement") {
+      const callExpression = expressionStatement.expression;
+
+      // If the only node in program body is a call it's probably an IIFE
+      if (callExpression.type === "CallExpression") {
+        body.push(...callExpression.callee.body.body);
+        body.shift();
+      }
+    }
+  }
+}
+
 export default function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
@@ -124,6 +142,8 @@ export default function transformer(file, api) {
   testCaseCall.remove();
   // Remove the JSTD test name declaration `var testName = "SomeTest"`
   testNameDeclarator.get().parent.prune();
+  // If the test is wrapped in an IIFE remove it
+  removeIIFE(root);
 
   return root.toSource();
 }
