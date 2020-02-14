@@ -6,8 +6,12 @@ function getTestName(root, testNameArg, j) {
     // **var testName** = "SomeTests";
     const nameDeclarators = root.findVariableDeclarators(testNameArg.name);
 
-    // var testName = **"SomeTests"**;
-    return nameDeclarators.find(j.Literal).get().value.value;
+    return {
+      // var testName = **"SomeTests"**;
+      testName: nameDeclarators.find(j.Literal).get().value.value,
+      // **var testName** = "SomeTests";
+      testNameDeclarator: nameDeclarators
+    };
   }
 
   throw new Error("Unimplemented getTestName");
@@ -24,6 +28,7 @@ function getTestsDeclaration(tests, root) {
       const testsVarDeclarator = root.findVariableDeclarators(callArg.name);
 
       return {
+        // var **testCase** = {...}
         variableDeclarator: testsVarDeclarator.get(),
         // **var** testCase = {...} - "VariableDeclaration"
         variableDeclaration: testsVarDeclarator.get().parent
@@ -75,7 +80,7 @@ function createTestExpressionStatement(j, property) {
   throw new Error("");
 }
 
-function gggg(variableDeclarator, j, testName) {
+function convertJSTDTestsToJasmine(variableDeclarator, j, testName) {
   const testsExpressionStatements = variableDeclarator.value.init.properties.map(
     property => createTestExpressionStatement(j, property)
   );
@@ -95,39 +100,30 @@ function gggg(variableDeclarator, j, testName) {
 export default function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
-
+  // Find the JSTD `TestCase()` call expression
   const testCaseCall = root.find(j.CallExpression, TEST_CASE_CALL_FILTER);
-  const [testNameArg, tests] = testCaseCall.get().value.arguments;
-
-  const testName = getTestName(root, testNameArg, j);
-  debugger;
+  // Find the JSTD test name and tests `TestCase("name", tests)`
+  const [testNameArg, testsArg] = testCaseCall.get().value.arguments;
+  // Get the test name string literal and the test name var declaration
+  const { testName, testNameDeclarator } = getTestName(root, testNameArg, j);
+  // Get tests declarator `var *tests = {}*` and declaration `*var tests = {}*`
   const { variableDeclarator, variableDeclaration } = getTestsDeclaration(
-    tests,
+    testsArg,
     root
   );
+  // Transform the JSTD tests into Jasmine (`describe`/`it`) tests
+  const jasmineTests = convertJSTDTestsToJasmine(
+    variableDeclarator,
+    j,
+    testName
+  );
 
-  //   testCaseCall.remove
-
-  const u = gggg(variableDeclarator, j, testName);
-
-  variableDeclaration.replace(u);
+  // Replace the JSTD tests declaration with the Jasmine ones
+  variableDeclaration.replace(jasmineTests);
+  // Remove the JSTD `TestCase()` call expression
+  testCaseCall.remove();
+  // Remove the JSTD test name declaration `var testName = "SomeTest"`
+  testNameDeclarator.get().parent.prune();
 
   return root.toSource();
-
-  //   return testsDeclarations
-  //     .replaceWith(p => {
-  //       const testsExpressionStatements = p.value.init.properties.map(property =>
-  //         createTestExpressionStatement(j, property)
-  //       );
-
-  //       return j.callExpression(j.identifier("describe"), [
-  //         j.literal(testName),
-  //         j.arrowFunctionExpression(
-  //           [],
-  //           j.blockStatement(testsExpressionStatements),
-  //           false
-  //         )
-  //       ]);
-  //     })
-  //     .toSource();
 }
