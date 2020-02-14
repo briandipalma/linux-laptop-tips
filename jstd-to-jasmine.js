@@ -1,5 +1,3 @@
-import { func } from "prop-types";
-
 const TEST_CASE_CALL_FILTER = { callee: { name: "TestCase" } };
 
 function getTestName(root, testNameArg, j) {
@@ -15,15 +13,21 @@ function getTestName(root, testNameArg, j) {
   throw new Error("Unimplemented getTestName");
 }
 
-function getTestsDeclarators(tests, root) {
+function getTestsDeclaration(tests, root) {
   // sinon.testCase() path.
   if (tests.type === "CallExpression") {
     const callArg = tests.arguments[0];
 
     // sinon.testCase(**testCase**) path
     if (callArg.type === "Identifier") {
-      // **var testCase** = {...}
-      return root.findVariableDeclarators(callArg.name);
+      // var **testCase** = {...}
+      const testsVarDeclarator = root.findVariableDeclarators(callArg.name);
+
+      return {
+        variableDeclarator: testsVarDeclarator.get(),
+        // **var** testCase = {...} - "VariableDeclaration"
+        variableDeclaration: testsVarDeclarator.get().parent
+      };
     }
 
     throw new Error("Unimplemented getTestProperties 2");
@@ -71,33 +75,59 @@ function createTestExpressionStatement(j, property) {
   throw new Error("");
 }
 
+function gggg(variableDeclarator, j, testName) {
+  const testsExpressionStatements = variableDeclarator.value.init.properties.map(
+    property => createTestExpressionStatement(j, property)
+  );
+
+  return j.expressionStatement(
+    j.callExpression(j.identifier("describe"), [
+      j.literal(testName),
+      j.arrowFunctionExpression(
+        [],
+        j.blockStatement(testsExpressionStatements),
+        false
+      )
+    ])
+  );
+}
+
 export default function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
 
-  debugger;
   const testCaseCall = root.find(j.CallExpression, TEST_CASE_CALL_FILTER);
   const [testNameArg, tests] = testCaseCall.get().value.arguments;
 
   const testName = getTestName(root, testNameArg, j);
-  const testsDeclarators = getTestsDeclarators(tests, root);
+  debugger;
+  const { variableDeclarator, variableDeclaration } = getTestsDeclaration(
+    tests,
+    root
+  );
 
   //   testCaseCall.remove
 
-  return testsDeclarators
-    .replaceWith(p => {
-      const testsExpressionStatements = p.value.init.properties.map(property =>
-        createTestExpressionStatement(j, property)
-      );
+  const u = gggg(variableDeclarator, j, testName);
 
-      return j.callExpression(j.identifier("describe"), [
-        j.literal(testName),
-        j.arrowFunctionExpression(
-          [],
-          j.blockStatement(testsExpressionStatements),
-          false
-        )
-      ]);
-    })
-    .toSource();
+  variableDeclaration.replace(u);
+
+  return root.toSource();
+
+  //   return testsDeclarations
+  //     .replaceWith(p => {
+  //       const testsExpressionStatements = p.value.init.properties.map(property =>
+  //         createTestExpressionStatement(j, property)
+  //       );
+
+  //       return j.callExpression(j.identifier("describe"), [
+  //         j.literal(testName),
+  //         j.arrowFunctionExpression(
+  //           [],
+  //           j.blockStatement(testsExpressionStatements),
+  //           false
+  //         )
+  //       ]);
+  //     })
+  //     .toSource();
 }
