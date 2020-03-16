@@ -1,3 +1,4 @@
+// yarn jscodeshift packages-caplin/cps-charts/_test-ut/actionhandlers/chartDragDataDroppedTest.js
 const TEST_CASE_CALL_FILTER = { callee: { name: "TestCase" } };
 
 function getTestName(root, testNameArg, j) {
@@ -14,31 +15,53 @@ function getTestName(root, testNameArg, j) {
     };
   }
 
+  // TestCase(**"testName"**, testCase); the test name is a string literal
+  if (testNameArg.type === "Literal") {
+    return {
+      // TestCase(**"testName"**, testCase);
+      testName: testNameArg.value
+    };
+  }
+
   throw new Error("Unimplemented getTestName");
 }
 
+function getTestsVarNodes(node, root) {
+  if (node.type === "Identifier") {
+    // var **testCase** = {...}
+    const testsVarDeclarator = root.findVariableDeclarators(node.name);
+
+    return {
+      // var **testCase** = {...}
+      variableDeclarator: testsVarDeclarator.get(),
+      // **var** testCase = {...} - "VariableDeclaration"
+      variableDeclaration: testsVarDeclarator.get().parent
+    };
+  }
+
+  if (node.value.type === "VariableDeclarator") {
+    return {
+      // var **testCase** = TestCase("")
+      variableDeclarator: node.get(),
+      // **var** testCase = TestCase("") - "VariableDeclaration"
+      variableDeclaration: node.get().parent
+    };
+  }
+
+  throw new Error("Unimplemented getTestsDeclaration 2");
+}
+
 function getTestsDeclaration(tests, root) {
-  // sinon.testCase() path.
+  // sinon.testCase(testCase) path.
   if (tests.type === "CallExpression") {
     const callArg = tests.arguments[0];
 
     // sinon.testCase(**testCase**) path
-    if (callArg.type === "Identifier") {
-      // var **testCase** = {...}
-      const testsVarDeclarator = root.findVariableDeclarators(callArg.name);
-
-      return {
-        // var **testCase** = {...}
-        variableDeclarator: testsVarDeclarator.get(),
-        // **var** testCase = {...} - "VariableDeclaration"
-        variableDeclaration: testsVarDeclarator.get().parent
-      };
-    }
-
-    throw new Error("Unimplemented getTestsDeclaration 2");
+    return getTestsVarNodes(callArg, root);
   }
 
-  throw new Error("Unimplemented getTestsDeclaration");
+  // TestCase(testCaseName, testCase); path
+  return getTestsVarNodes(tests, root);
 }
 
 function getFunctionName(name) {
@@ -54,6 +77,17 @@ function getFunctionName(name) {
 }
 
 function createTestExpressionStatement(j, property) {
+  if (property.type === "AssignmentExpression") {
+    const testName = property.left.property.name;
+
+    return j.expressionStatement(
+      j.callExpression(j.identifier("it"), [
+        j.literal(testName),
+        property.right
+      ])
+    );
+  }
+
   // "test ...": function() { ... } path
   if (property.key.type === "Literal") {
     const testName = property.key.value;
@@ -61,7 +95,7 @@ function createTestExpressionStatement(j, property) {
     return j.expressionStatement(
       j.callExpression(j.identifier("it"), [
         j.literal(testName),
-        j.arrowFunctionExpression([], property.value.body, false)
+        property.value
       ])
     );
   }
@@ -71,18 +105,43 @@ function createTestExpressionStatement(j, property) {
     const functionName = getFunctionName(property.key.name);
 
     return j.expressionStatement(
-      j.callExpression(j.identifier(functionName), [
-        j.arrowFunctionExpression([], property.value.body, false)
-      ])
+      j.callExpression(j.identifier(functionName), [property.value])
     );
   }
 
   throw new Error("createTestExpressionStatement");
 }
 
-function convertJSTDTestsToJasmine(variableDeclarator, j, testName) {
-  const testsExpressionStatements = variableDeclarator.value.init.properties.map(
-    property => createTestExpressionStatement(j, property)
+function getJSTDTestFunctions(variableDeclarator, root, j) {
+  const variableValue = variableDeclarator.value.init;
+
+  /**
+   * var **aTest** = TestCase("testName"); path
+   * aTest.prototype.testSomething = function() { ... }
+   */
+  if (variableValue.type === "CallExpression") {
+    const testCaseFilter = { name: variableValue.arguments[0].value };
+    const identifiers = root.find(j.Identifier, testCaseFilter);
+    // Filter the declaration identifier out
+    const testIdentifiers = identifiers.filter(
+      path => path.value !== variableDeclarator.value.id
+    );
+    // **aTest.prototype.testSomething = function() { ... }**
+    const testAssignmentExpressions = testIdentifiers.map(
+      path => path.parent.parent.parent
+    );
+
+    return testAssignmentExpressions.nodes();
+  }
+
+  // Else `test = { ... }` case
+  return variableValue.properties;
+}
+
+function convertJSTDTestsToJasmine(variableDeclarator, j, testName, root) {
+  const testFunctions = getJSTDTestFunctions(variableDeclarator, root, j);
+  const testsExpressionStatements = testFunctions.map(property =>
+    createTestExpressionStatement(j, property)
   );
 
   return j.expressionStatement(
@@ -115,13 +174,56 @@ function removeIIFE(root) {
   }
 }
 
+function insertJasmineTests(variableDeclaration, jasmineTests) {
+  // If the test declarator is stand alone `var tests = { ... };`
+  if (variableDeclaration.value.declarations.length === 1) {
+    variableDeclaration.replace(jasmineTests);
+    // Else the declarator is sharing a declaration `var f = 10, tests = { ... }`
+  } else if (variableDeclaration.value.declarations.length > 1) {
+    const parentNode = variableDeclaration.parent.value;
+    const declarationIndex = parentNode.body.indexOf(variableDeclaration.value);
+
+    // Put the Jasmine tests after the shared var declaration
+    parentNode.body.splice(declarationIndex + 1, 0, jasmineTests);
+  }
+}
+
+function removeJSTDCode(testNameDeclarator, variableDeclarator) {
+  // Remove the JSTD test name declaration `var testName = "SomeTest"`, check if
+  // the variable exists as in some cases the name is provided as string literal
+  if (testNameDeclarator) {
+    testNameDeclarator.get().prune();
+  }
+
+  // This only has an effect in the case the declarator is sharing a declaration
+  // e.g. `var *tests = { ... }*, x = 10, ...`; if it's standalone it's replaced
+  variableDeclarator.get().prune();
+}
+
+function findTestNameAndTests(testCaseCall) {
+  // `var aTest = TestCase("name");` path
+  if (testCaseCall.get().value.arguments.length === 1) {
+    // First argument in array is name `var aTest = TestCase(**"name"**);`
+    // second part is var declarator `var **aTest** = TestCase(**"name"**);`
+    return [testCaseCall.get().value.arguments[0], testCaseCall.get().parent];
+  }
+
+  // `TestCase("name", tests)` path
+  return testCaseCall.get().value.arguments;
+}
+
 export default function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
   // Find the JSTD `TestCase()` call expression
   const testCaseCall = root.find(j.CallExpression, TEST_CASE_CALL_FILTER);
+
+  if (testCaseCall.length === 0) {
+    return;
+  }
+
   // Find the JSTD test name and tests `TestCase("name", tests)`
-  const [testNameArg, testsArg] = testCaseCall.get().value.arguments;
+  const [testNameArg, testsArg] = findTestNameAndTests(testCaseCall);
   // Get the test name string literal and the test name var declaration
   const { testName, testNameDeclarator } = getTestName(root, testNameArg, j);
   // Get tests declarator `var *tests = {}*` and declaration `*var tests = {}*`
@@ -133,15 +235,17 @@ export default function transformer(file, api) {
   const jasmineTests = convertJSTDTestsToJasmine(
     variableDeclarator,
     j,
-    testName
+    testName,
+    root
   );
 
   // Replace the JSTD tests declaration with the Jasmine ones
-  variableDeclaration.replace(jasmineTests);
+  insertJasmineTests(variableDeclaration, jasmineTests);
   // Remove the JSTD `TestCase()` call expression
   testCaseCall.remove();
-  // Remove the JSTD test name declaration `var testName = "SomeTest"`
-  testNameDeclarator.get().parent.prune();
+  // Remove the JSTD test name declarator `var *testName = "ATest"*` and tests
+  // declarator `var *tests = { ... }*, x = 10, ...`
+  removeJSTDCode(testNameDeclarator, variableDeclarator);
   // If the test is wrapped in an IIFE remove it
   removeIIFE(root);
 
