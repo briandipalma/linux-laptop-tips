@@ -273,7 +273,7 @@ function findAndReplaceJSTDAssertions(root, j) {
   const toBeStringArgs = () => [j.identifier("String")];
 
   // JSTD `assertEquals()` call expressions
-  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toBe", toBeArgs);
+  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toEqual", toBeArgs);
   // JSTD `assertString()` call expressions
   replaceAssertions(
     root,
