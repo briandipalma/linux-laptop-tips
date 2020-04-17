@@ -1,6 +1,7 @@
 // yarn jscodeshift packages-caplin/cps-charts/_test-ut/actionhandlers/chartDragDataDroppedTest.js
 const TEST_CASE_CALL_FILTER = { callee: { name: "TestCase" } };
 const ASYNC_TEST_CASE_CALL_FILTER = { callee: { name: "AsyncTestCase" } };
+const ASSERT_EQUALS_CALL_FILTER = { callee: { name: "assertEquals" } };
 
 function getTestName(root, testNameArg, j) {
   // TestCase(**testName**, testCase);
@@ -245,6 +246,25 @@ function findJSTDTestCaseCall(root, j) {
   }
 }
 
+function replaceJSTDAssertions(root, j) {
+  // Find the JSTD `assertEquals()` call expressions
+  const assertEquals = root.find(j.CallExpression, ASSERT_EQUALS_CALL_FILTER);
+
+  if (assertEquals.length > 0) {
+    assertEquals.map((aE) =>
+      aE.replace(
+        j.callExpression(
+          j.memberExpression(
+            j.callExpression(j.identifier("expect"), [aE.value.arguments[0]]),
+            j.identifier("toBe")
+          ),
+          [aE.value.arguments[1]]
+        )
+      )
+    );
+  }
+}
+
 export default function transformer(file, api) {
   const j = api.jscodeshift;
   const root = j(file.source);
@@ -273,6 +293,7 @@ export default function transformer(file, api) {
 
   // Replace the JSTD tests declaration with the Jasmine ones
   insertJasmineTests(variableDeclaration, jasmineTests);
+  replaceJSTDAssertions(root, j);
   // Remove the JSTD `TestCase()` call expression
   testCaseCall.remove();
   // Remove the JSTD test name declarator `var *testName = "ATest"*` and tests
