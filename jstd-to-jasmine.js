@@ -2,6 +2,9 @@
 const TEST_CASE_CALL_FILTER = { callee: { name: "TestCase" } };
 const ASYNC_TEST_CASE_CALL_FILTER = { callee: { name: "AsyncTestCase" } };
 const ASSERT_EQUALS_CALL_FILTER = { callee: { name: "assertEquals" } };
+const ASSERT_STRING_CALL_FILTER = { callee: { name: "assertString" } };
+const ASSERT_TRUE_CALL_FILTER = { callee: { name: "assertTrue" } };
+const ASSERT_FALSE_CALL_FILTER = { callee: { name: "assertFalse" } };
 
 function getTestName(root, testNameArg, j) {
   // TestCase(**testName**, testCase);
@@ -246,23 +249,43 @@ function findJSTDTestCaseCall(root, j) {
   }
 }
 
-function replaceJSTDAssertions(root, j) {
-  // Find the JSTD `assertEquals()` call expressions
-  const assertEquals = root.find(j.CallExpression, ASSERT_EQUALS_CALL_FILTER);
+function replaceAssertions(root, j, filter, matcher, matcherArgs) {
+  // Find the JSTD assertion call expressions
+  const assertCall = root.find(j.CallExpression, filter);
 
-  if (assertEquals.length > 0) {
-    assertEquals.map((aE) =>
-      aE.replace(
+  if (assertCall.length > 0) {
+    assertCall.map((aC) =>
+      aC.replace(
         j.callExpression(
           j.memberExpression(
-            j.callExpression(j.identifier("expect"), [aE.value.arguments[0]]),
-            j.identifier("toBe")
+            j.callExpression(j.identifier("expect"), [aC.value.arguments[0]]),
+            j.identifier(matcher)
           ),
-          [aE.value.arguments[1]]
+          matcherArgs ? matcherArgs(aC) : []
         )
       )
     );
   }
+}
+
+function findAndReplaceJSTDAssertions(root, j) {
+  const toBeArgs = (aE) => [aE.value.arguments[1]];
+  const toBeStringArgs = () => [j.identifier("String")];
+
+  // JSTD `assertEquals()` call expressions
+  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toBe", toBeArgs);
+  // JSTD `assertString()` call expressions
+  replaceAssertions(
+    root,
+    j,
+    ASSERT_STRING_CALL_FILTER,
+    "toBeInstanceOf",
+    toBeStringArgs
+  );
+  //  JSTD `assertTrue()` call expressions
+  replaceAssertions(root, j, ASSERT_TRUE_CALL_FILTER, "toBeTruthy", () => []);
+  // JSTD `assertFalse()` call expressions
+  replaceAssertions(root, j, ASSERT_FALSE_CALL_FILTER, "toBeFalsy", () => []);
 }
 
 export default function transformer(file, api) {
@@ -293,7 +316,7 @@ export default function transformer(file, api) {
 
   // Replace the JSTD tests declaration with the Jasmine ones
   insertJasmineTests(variableDeclaration, jasmineTests);
-  replaceJSTDAssertions(root, j);
+  findAndReplaceJSTDAssertions(root, j);
   // Remove the JSTD `TestCase()` call expression
   testCaseCall.remove();
   // Remove the JSTD test name declarator `var *testName = "ATest"*` and tests
