@@ -1,11 +1,11 @@
 // yarn jscodeshift packages-caplin/cps-charts/_test-ut/actionhandlers/chartDragDataDroppedTest.js
 const TEST_CASE_CALL_FILTER = { callee: { name: "TestCase" } };
 const ASYNC_TEST_CASE_CALL_FILTER = { callee: { name: "AsyncTestCase" } };
-const ASSERT_EQUALS_CALL_FILTER = { callee: { name: "assertEquals" } };
-const ASSERT_STRING_CALL_FILTER = { callee: { name: "assertString" } };
+const ASSERT_EQUALS_FILTER = { callee: { name: "assertEquals" } };
+const ASSERT_STRING = { callee: { name: "assertString" } };
 const ASSERT_TRUE_CALL_FILTER = { callee: { name: "assertTrue" } };
 const ASSERT_FALSE_CALL_FILTER = { callee: { name: "assertFalse" } };
-const ASSERT_EXCEPTION_CALL_FILTER = { callee: { name: "assertException" } };
+const ASSERT_EXCEPTION = { callee: { name: "assertException" } };
 
 function getTestName(root, testNameArg, j) {
   // TestCase(**testName**, testCase);
@@ -250,7 +250,7 @@ function findJSTDTestCaseCall(root, j) {
   }
 }
 
-function replaceAssertions(root, j, filter, matcher, matcherArgs) {
+function replaceAssertions(root, j, filter, matcher, expected = () => []) {
   // Find the JSTD assertion call expressions
   const assertCall = root.find(j.CallExpression, filter);
 
@@ -259,10 +259,13 @@ function replaceAssertions(root, j, filter, matcher, matcherArgs) {
       aC.replace(
         j.callExpression(
           j.memberExpression(
-            j.callExpression(j.identifier("expect"), [aC.value.arguments[0]]),
+            j.callExpression(j.identifier("expect"), [
+              // actual is the last argument in all assertions
+              aC.value.arguments[aC.value.arguments.length - 1],
+            ]),
             j.identifier(matcher)
           ),
-          matcherArgs ? matcherArgs(aC) : []
+          expected(aC)
         )
       )
     );
@@ -270,25 +273,20 @@ function replaceAssertions(root, j, filter, matcher, matcherArgs) {
 }
 
 function findAndReplaceJSTDAssertions(root, j) {
-  const matchArg = (aE) => [aE.value.arguments[1]];
   const toBeStringArgs = () => [j.identifier("String")];
+  // expected value is second last argument in assertions that have one
+  const expected = (aC) => [aC.value.arguments[aC.value.arguments.length - 2]];
 
   // JSTD `assertEquals()` call expressions
-  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toEqual", matchArg);
+  replaceAssertions(root, j, ASSERT_EQUALS_FILTER, "toEqual", expected);
   // JSTD `assertString()` call expressions
-  replaceAssertions(
-    root,
-    j,
-    ASSERT_STRING_CALL_FILTER,
-    "toBeInstanceOf",
-    toBeStringArgs
-  );
+  replaceAssertions(root, j, ASSERT_STRING, "toBeInstanceOf", toBeStringArgs);
   //  JSTD `assertTrue()` call expressions
-  replaceAssertions(root, j, ASSERT_TRUE_CALL_FILTER, "toBeTruthy", () => []);
+  replaceAssertions(root, j, ASSERT_TRUE_CALL_FILTER, "toBeTruthy");
   // JSTD `assertFalse()` call expressions
-  replaceAssertions(root, j, ASSERT_FALSE_CALL_FILTER, "toBeFalsy", () => []);
+  replaceAssertions(root, j, ASSERT_FALSE_CALL_FILTER, "toBeFalsy");
   // JSTD `assertException()` call expressions
-  replaceAssertions(root, j, ASSERT_EXCEPTION_CALL_FILTER, "toThrow", matchArg);
+  replaceAssertions(root, j, ASSERT_EXCEPTION, "toThrowError", expected);
 }
 
 export default function transformer(file, api) {
