@@ -5,6 +5,7 @@ const ASSERT_EQUALS_CALL_FILTER = { callee: { name: "assertEquals" } };
 const ASSERT_STRING_CALL_FILTER = { callee: { name: "assertString" } };
 const ASSERT_TRUE_CALL_FILTER = { callee: { name: "assertTrue" } };
 const ASSERT_FALSE_CALL_FILTER = { callee: { name: "assertFalse" } };
+const ASSERT_EXCEPTION_CALL_FILTER = { callee: { name: "assertException" } };
 
 function getTestName(root, testNameArg, j) {
   // TestCase(**testName**, testCase);
@@ -269,11 +270,11 @@ function replaceAssertions(root, j, filter, matcher, matcherArgs) {
 }
 
 function findAndReplaceJSTDAssertions(root, j) {
-  const toBeArgs = (aE) => [aE.value.arguments[1]];
+  const matchArg = (aE) => [aE.value.arguments[1]];
   const toBeStringArgs = () => [j.identifier("String")];
 
   // JSTD `assertEquals()` call expressions
-  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toEqual", toBeArgs);
+  replaceAssertions(root, j, ASSERT_EQUALS_CALL_FILTER, "toEqual", matchArg);
   // JSTD `assertString()` call expressions
   replaceAssertions(
     root,
@@ -286,6 +287,8 @@ function findAndReplaceJSTDAssertions(root, j) {
   replaceAssertions(root, j, ASSERT_TRUE_CALL_FILTER, "toBeTruthy", () => []);
   // JSTD `assertFalse()` call expressions
   replaceAssertions(root, j, ASSERT_FALSE_CALL_FILTER, "toBeFalsy", () => []);
+  // JSTD `assertException()` call expressions
+  replaceAssertions(root, j, ASSERT_EXCEPTION_CALL_FILTER, "toThrow", matchArg);
 }
 
 export default function transformer(file, api) {
