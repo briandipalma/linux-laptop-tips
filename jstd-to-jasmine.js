@@ -250,7 +250,19 @@ function findJSTDTestCaseCall(root, j) {
   }
 }
 
-function replaceAssertions(root, j, filter, matcher, expected = () => []) {
+function standardActual(assertCall) {
+  // actual is the last argument in most assertions
+  return [assertCall.value.arguments[assertCall.value.arguments.length - 1]];
+}
+
+function replaceAssertions(
+  root,
+  j,
+  filter,
+  matcher,
+  expected = () => [],
+  actual = standardActual
+) {
   // Find the JSTD assertion call expressions
   const assertCall = root.find(j.CallExpression, filter);
 
@@ -259,10 +271,7 @@ function replaceAssertions(root, j, filter, matcher, expected = () => []) {
       aC.replace(
         j.callExpression(
           j.memberExpression(
-            j.callExpression(j.identifier("expect"), [
-              // actual is the last argument in all assertions
-              aC.value.arguments[aC.value.arguments.length - 1],
-            ]),
+            j.callExpression(j.identifier("expect"), actual(aC)),
             j.identifier(matcher)
           ),
           expected(aC)
@@ -276,6 +285,8 @@ function findAndReplaceJSTDAssertions(root, j) {
   const toBeStringArgs = () => [j.identifier("String")];
   // expected value is second last argument in assertions that have one
   const expected = (aC) => [aC.value.arguments[aC.value.arguments.length - 2]];
+  const errorE = (aC) => [aC.value.arguments[aC.value.arguments.length - 1]];
+  const errorA = (aC) => [aC.value.arguments[aC.value.arguments.length - 2]];
 
   // JSTD `assertEquals()` call expressions
   replaceAssertions(root, j, ASSERT_EQUALS_FILTER, "toEqual", expected);
@@ -286,7 +297,8 @@ function findAndReplaceJSTDAssertions(root, j) {
   // JSTD `assertFalse()` call expressions
   replaceAssertions(root, j, ASSERT_FALSE_CALL_FILTER, "toBeFalsy");
   // JSTD `assertException()` call expressions
-  replaceAssertions(root, j, ASSERT_EXCEPTION, "toThrowError", expected);
+  // assertException([msg], callback, error)
+  replaceAssertions(root, j, ASSERT_EXCEPTION, "toThrowError", errorE, errorA);
 }
 
 export default function transformer(file, api) {
@@ -329,6 +341,8 @@ export default function transformer(file, api) {
   );
   // If the test is wrapped in an IIFE remove it
   removeIIFE(root);
+
+  // ("use strict");
 
   return root.toSource();
 }
