@@ -51,6 +51,8 @@ alias ya='yarn add'
 alias yt='yarn test'
 alias yr='yarn run'
 alias ys='yarn start'
+alias yul='yarn unlink; yarn link'
+alias yl='yarn link'
 
 # Paths for applications
 # --------------------------------------------------
