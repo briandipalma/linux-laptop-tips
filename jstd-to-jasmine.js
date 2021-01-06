@@ -10,6 +10,11 @@ const ASSERT_NULL = { callee: { name: "assertNull" } };
 const ASSERT_UNDEFINED = { callee: { name: "assertUndefined" } };
 const ASSERT_NO_EXCEPTION = { callee: { name: "assertNoException" } };
 const ASSERT_NOT_EQUALS = { callee: { name: "assertNotEquals" } };
+const ASSERT_FAILS = { callee: { name: "assertFails" } };
+const ASSERT_ASSERT_ERROR = { callee: { name: "assertAssertError" } };
+const ASSERT_ARRAY_EQUALS = { callee: { name: "assertArrayEquals" } };
+const ASSERT_MAP_EQUALS = { callee: { name: "assertMapEquals" } };
+const ASSERT_NOT_SAME = { callee: { name: "assertNotSame" } };
 
 function getTestName(root, testNameArg, j) {
   // TestCase(**testName**, testCase);
@@ -211,6 +216,21 @@ function getJSTDTestFunctions(variableDeclarator, root, j) {
   return [variableValue.properties];
 }
 
+function getNodeWhereCommentsAreAttached(
+  testAssignmentExpressions,
+  index,
+  property
+) {
+  if (testAssignmentExpressions) {
+    const nodePath = testAssignmentExpressions.at(index).get();
+
+    return nodePath.parent.value;
+  }
+
+  // var testCase = { ***setUp: function () { ... }***,} case
+  return property;
+}
+
 function convertJSTDTestsToJasmine(variableDeclarator, j, testName, root) {
   const [testFunctions, testAssignmentExpressions] = getJSTDTestFunctions(
     variableDeclarator,
@@ -218,8 +238,11 @@ function convertJSTDTestsToJasmine(variableDeclarator, j, testName, root) {
     j
   );
   const testsExpressionStatements = testFunctions.map((property, index) => {
-    const nodePath = testAssignmentExpressions.at(index).get();
-    const expressionStatementNode = nodePath.parent.value;
+    const expressionStatementNode = getNodeWhereCommentsAreAttached(
+      testAssignmentExpressions,
+      index,
+      property
+    );
 
     return createTestExpressionWithComments(
       j,
@@ -383,8 +406,27 @@ function findAndReplaceJSTDAssertions(root, j) {
   const toBeStringArgs = () => [j.identifier("String")];
   // expected value is second last argument in assertions that have one
   const expected = (aC) => [aC.value.arguments[aC.value.arguments.length - 2]];
-  const errorE = (aC) => [aC.value.arguments[aC.value.arguments.length - 1]];
-  const errorA = (aC) => [aC.value.arguments[aC.value.arguments.length - 2]];
+  const errorE = (aC) => {
+    const assertCallArgs = aC.value.arguments;
+
+    // assertException(function () { ... }); case, no expected error
+    if (assertCallArgs[assertCallArgs.length - 2] === undefined) {
+      return [];
+    }
+
+    return [assertCallArgs[assertCallArgs.length - 1]];
+  };
+  const errorA = (aC) => {
+    const assertCallArgs = aC.value.arguments;
+
+    // assertException(function () { ... }); case, no expected error
+    if (assertCallArgs[assertCallArgs.length - 2] === undefined) {
+      // No expected so the actual is the last argument
+      return [assertCallArgs[assertCallArgs.length - 1]];
+    }
+
+    return [assertCallArgs[assertCallArgs.length - 2]];
+  };
 
   // JSTD `assertEquals()` call expressions
   replaceAssertions(root, j, ASSERT_EQUALS_FILTER, "toEqual", expected);
@@ -405,6 +447,21 @@ function findAndReplaceJSTDAssertions(root, j) {
     j,
     ASSERT_NOT_EQUALS,
     "toEqual",
+    expected,
+    undefined,
+    true
+  );
+  // assertFails
+  replaceAssertions(root, j, ASSERT_FAILS, "toThrow");
+  // assertAssertError
+  replaceAssertions(root, j, ASSERT_ASSERT_ERROR, "toThrowError");
+  replaceAssertions(root, j, ASSERT_ARRAY_EQUALS, "toEqual", expected);
+  replaceAssertions(root, j, ASSERT_MAP_EQUALS, "toEqual", expected);
+  replaceAssertions(
+    root,
+    j,
+    ASSERT_NOT_SAME,
+    "toBe",
     expected,
     undefined,
     true
